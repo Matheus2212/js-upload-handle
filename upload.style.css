@@ -1,0 +1,15 @@
+.js-upload-button,
+.js-upload-button * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+
+  display: block;
+  position: relative;
+}
+
+.js-upload-button input {
+  display: none !important;
+}
