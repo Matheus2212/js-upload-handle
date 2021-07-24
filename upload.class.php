@@ -13,19 +13,30 @@ class Upload
     public static function addProfile($name, $config)
     {
         /* $template = array(
-          "formats" => array("jpeg", "jpg", "png"),
+          "types" => array("jpeg", "jpg", "png"),
           "folder" => "./uploads/",
           "maxSize" => 260000,
           "maxFiles" => 10,
           "vars" => array(), // passa variaveis adicionais
           ); */
-        $config['integrity'] = self::AESencrypt($config, self::$key);
+        if (isset($config['folder'])) {
+            $last = substr($config['folder'], -1);
+            if ($last == '/' || $last == "\\") {
+                $config['folder'] = substr($config['folder'], 0, -1);
+            }
+        }
+        $config['integrity'] = self::AESencrypt($config, self::getKey());
         unset($config['folder']);
         self::$profiles[md5($name)] = array(
-            //"name" => md5($name),
             "config" => $config
+            //"name" => md5($name),
             //$config
         );
+    }
+
+    public static function getProfile($ciphered)
+    {
+        return self::AESdecrypt($ciphered, self::getKey());
     }
 
     public static function set($input, $profile)
@@ -36,6 +47,11 @@ class Upload
     public static function setRootDir($dir)
     {
         self::$rootDir = $dir;
+    }
+
+    public static function getKey()
+    {
+        return self::$key;
     }
 
     public static function recursive_utf8_encode($array)
@@ -50,7 +66,7 @@ class Upload
     public static function recursive_utf8_decode($array)
     {
         if (is_array($array)) {
-            array_map('self::recursive_utf8_decode', $array);
+            return array_map('self::recursive_utf8_decode', $array);
         } else {
             return utf8_decode($array);
         }
@@ -61,20 +77,20 @@ class Upload
         if (is_array($data)) {
             $data = json_encode(self::recursive_utf8_encode($data));
         }
-        $key = base64_decode($key);
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-        $data = openssl_encrypt($data, 'aes-256-cbc', $key, 0, $iv);
-        return base64_encode($data . '::' . $iv);
+        $keyEncrypt = base64_decode($key);
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-128-CBC'));
+        $encrypted = openssl_encrypt($data, 'AES-128-CBC', $keyEncrypt, 0, $iv);
+        return base64_encode($encrypted . '::' . base64_encode($iv));
     }
 
-    function AESdecrypt($data, $key)
+    public static function AESdecrypt($data, $key)
     {
-        $key = base64_decode($key);
-        list($data, $iv) = array_pad(explode('::', base64_decode($data), 2), 2, null);
-        $data = openssl_decrypt($data, 'aes-256-cbc', $key, 0, $iv);
+        $keyDecrypt = base64_decode($key);
+        list($encryptedData, $iv) = array_pad(explode('::', base64_decode($data), 2), 2, null);
+        $data = openssl_decrypt($encryptedData, 'AES-128-CBC', $keyDecrypt, 0, base64_decode($iv));
         $check = @json_decode($data, true);
         if ($check) {
-            $data = self::recursive_utf8_decode(($check));
+            $data = self::recursive_utf8_decode($check);
         }
         return $data;
     }
@@ -99,6 +115,34 @@ class Upload
         if ($tags) {
             echo "</script>";
         }
+    }
+
+    public static function saveFile($fileName, $data, $folder)
+    {
+        if (!is_dir($folder)) {
+            mkdir($folder, 0775, true);
+            chmod($folder, 0775);
+        }
+        $file = @fopen($folder . DIRECTORY_SEPARATOR . $fileName, 'a');
+        if ($file) {
+            $data = explode(',', $data);
+            fwrite($file, base64_decode(str_replace(" ", "+", $data[1])));
+            //fwrite($file, $data);
+            fclose($file);
+            return true;
+        } else {
+            // script doesn't have permission to create folders or files.
+            return false;
+        }
+    }
+
+    public static function setNewName($source)
+    {
+        $aux = explode(".", $source);
+        $extension = $aux[count($aux) - 1];
+        unset($aux[count($aux) - 1]);
+        $aux = implode('.', $aux);
+        return preg_replace("/[^a-zA-Z0-9\.]/", "-", $aux) . md5($source) . md5(time()) . '.' . $extension;
     }
 
     public static function init($tags = true)

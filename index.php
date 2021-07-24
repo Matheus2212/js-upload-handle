@@ -7,9 +7,9 @@ header("Pragma: no-cache");
 include("upload.class.php");
 
 $profile = array(
-        "formats" => array("jpeg", "jpg", "png"),
+        "types" => array("jpeg", "jpg", "png", "image", "iso"),
         "folder" => "./uploads/",
-        "size" => 266000,
+        "size" => 26600000000000,
         "total" => 10,
         "vars" => array(), // passa variaveis adicionais
 );
@@ -33,7 +33,7 @@ Upload::set('imagem', 'imagem');
 </head>
 
 <body>
-        <input type="file" name="imagem"/>
+        <input type="file" name="imagem" />
         <?php Upload::init() ?>
 </body>
 
