@@ -6,10 +6,282 @@
   -ms-box-sizing: border-box;
   box-sizing: border-box;
 
-  display: block;
-  position: relative;
+  font-family: inherit;
 }
 
 .js-upload-button input {
   display: none !important;
+}
+
+.js-upload-button,
+.js-upload-button:active,
+.js-upload-button:link,
+.js-upload-button:visited,
+.js-upload-button:focus {
+  padding: 15px 60px;
+  padding-right: 60px;
+  background-color: #4e8ccc;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  border-width: 3px;
+  border-style: solid;
+  border-color: #d2e7f7;
+  color: #ffffff;
+
+  -webkit-transition: ease-in-out 0.3s;
+  -moz-transition: ease-in-out 0.3s;
+  -o-transition: ease-in-out 0.3s;
+  -ms-transition: ease-in-out 0.3s;
+  transition: ease-in-out 0.3s;
+
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -o-border-radius: 20px;
+  -ms-border-radius: 20px;
+  border-radius: 20px;
+}
+.js-upload-button:hover,
+.js-upload-button.js-uploading {
+  background: #004892;
+}
+.js-upload-button.js-uploading {
+  padding-right: 90px;
+}
+.js-upload-button span {
+  display: block;
+  position: absolute;
+  top: 100%;
+  left: 0px;
+  height: 100%;
+  line-height: 30px;
+  opacity: 0;
+  visibility: none;
+  text-indent: 40px;
+  right: 0;
+
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -o-border-radius: 20px;
+  -ms-border-radius: 20px;
+  border-radius: 20px;
+
+  -webkit-transition: ease-in-out 0.3s;
+  -moz-transition: ease-in-out 0.3s;
+  -o-transition: ease-in-out 0.3s;
+  -ms-transition: ease-in-out 0.3s;
+  transition: ease-in-out 0.3s;
+}
+.js-upload-button span.active {
+  top: 0;
+  opacity: 1;
+  visibility: visible;
+}
+.js-upload-button span::before,
+.js-upload-button span::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+
+  -webkit-transform: translateY(-50%);
+  -moz-transform: translateY(-50%);
+  -o-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.js-upload-button span:nth-child(1)::before,
+.js-upload-button span:nth-child(1)::after {
+  width: 3px;
+  height: 13px;
+  background-color: #ffffff;
+  left: 17px;
+  top: 8px;
+
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -o-border-radius: 6px;
+  -ms-border-radius: 6px;
+  border-radius: 6px;
+}
+.js-upload-button span:nth-child(1)::before {
+  left: 14px;
+
+  -webkit-transform: rotate(35deg);
+  -moz-transform: rotate(35deg);
+  -o-transform: rotate(35deg);
+  -ms-transform: rotate(35deg);
+  transform: rotate(35deg);
+}
+.js-upload-button span:nth-child(1)::after {
+  left: 20px;
+
+  -webkit-transform: rotate(-35deg);
+  -moz-transform: rotate(-35deg);
+  -o-transform: rotate(-35deg);
+  -ms-transform: rotate(-35deg);
+  transform: rotate(-35deg);
+}
+
+.js-upload-button span:nth-child(2) {
+  background-color: #d2e7f7;
+  width: 0;
+  border-color: transparent;
+}
+
+.js-upload-button span:nth-child(2)::before,
+.js-upload-button span:nth-child(2)::after {
+  content: ".";
+  font-size: 50px;
+  left: 7px;
+  top: -12px;
+  text-indent: 0;
+  letter-spacing: -5px;
+  color: #ffffff;
+  transform: none;
+}
+.js-upload-button span:nth-child(2)::before {
+  text-indent: 8px;
+}
+.js-upload-button span:nth-child(2)::after {
+  content: "..";
+  letter-spacing: 3.5px;
+
+  -webkit-animation: js-uploading-side-to-side ease infinite 1s;
+  -moz-animation: js-uploading-side-to-side ease infinite 1s;
+  -o-animation: js-uploading-side-to-side ease infinite 1s;
+  -ms-animation: js-uploading-side-to-side ease infinite 1s;
+  animation: js-uploading-side-to-side ease infinite 1s;
+}
+@keyframes js-uploading-side-to-side {
+  0% {
+    left: 10px;
+  }
+  50% {
+    left: 4.5px;
+  }
+  100% {
+    left: 10px;
+  }
+}
+
+.js-upload-button span:nth-child(3)::before,
+.js-upload-button span:nth-child(3)::after {
+  width: 3px;
+  height: 13px;
+  background-color: #ffffff;
+  left: 17px;
+  top: 41%;
+
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -o-border-radius: 6px;
+  -ms-border-radius: 6px;
+  border-radius: 6px;
+}
+.js-upload-button span:nth-child(3)::before {
+  left: 14px;
+  height: 10px;
+
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+.js-upload-button span:nth-child(3)::after {
+  height: 17px;
+  left: 22px;
+  margin-top: -5px;
+
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+.js-upload-button a,
+.js-upload-button a:active,
+.js-upload-button a:visited,
+.js-upload-button a:link {
+  position: absolute;
+  height: 30px;
+  width: 30px;
+  top: 50%;
+  margin-top: -15px;
+  right: 0;
+  background-color: #ba0039;
+  border: 3px solid #fff;
+  opacity: 0;
+  z-index: -1;
+
+  -webkit-animation: js-upload-blink ease infinite 2s;
+  -moz-animation: js-upload-blink ease infinite 2s;
+  -o-animation: js-upload-blink ease infinite 2s;
+  -ms-animation: js-upload-blink ease infinite 2s;
+  animation: js-upload-blink ease infinite 2s;
+
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  -o-border-radius: 100%;
+  -ms-border-radius: 100%;
+  border-radius: 100%;
+
+  -webkit-transition: ease-in-out 0.4s;
+  -moz-transition: ease-in-out 0.4s;
+  -o-transition: ease-in-out 0.4s;
+  -ms-transition: ease-in-out 0.4s;
+  transition: ease-in-out 0.4s;
+}
+.js-upload-button a:hover {
+  background-color: #d3082a;
+}
+.js-upload-button a::after,
+.js-upload-button a::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 3px;
+  height: 14px;
+  background-color: #ffffff;
+  top: 5px;
+  left: 10px;
+
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  -ms-border-radius: 10px;
+  border-radius: 10px;
+}
+.js-upload-button a::after {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+.js-upload-button a::before {
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+@keyframes js-upload-blink {
+  0% {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #ffffff;
+  }
+  100% {
+    border-color: transparent;
+  }
+}
+.js-upload-button.js-uploading a {
+  opacity: 1;
+  z-index: 1;
+  transform: rotate(180deg);
 }

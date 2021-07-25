@@ -1,11 +1,14 @@
 var Upload = {
-        defaultMessage: 'Enviar Arquivos',
+        defaultMessage: {
+                upload: "Enviar",
+                uploading: "Enviando",
+                uploaded: "Enviado"
+        },
         defaultURL: 'upload.middleware.php',
-        //defaultSliceSize: (10 * 1024 * 1024), // 10mb
-        defaultSliceSize: (10 * 10 * 1024),
+        defaultSliceSize: (10 * 1024 * 1024), // 10mb
         newID: function () {
                 var result = [];
-                var length = 17;
+                var length = 10;
                 var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
                 var charactersLength = characters.length;
                 for (var i = 0; i < length; i++) {
@@ -15,25 +18,41 @@ var Upload = {
         },
         build: function (inputs) {
                 if (inputs.length == 0) {
-                        console.log('Inputs not found!');
+                        console.log('Input tags not found!');
                         return false;
                 }
                 for (var i = 0; i < inputs.length; i++) {
                         var newID = this.newID();
                         var input = inputs[i];
                         input.setAttribute('id', newID);
-                        var text = input.getAttribute('data-message');
-                        if (text == null || text == undefined) {
-                                text = this.defaultMessage;
-                        }
+                        var keys = Object.keys(this.defaultMessage);
                         var label = document.createElement('label');
-                        var span = document.createElement('span');
-                        span.innerText = text;
-                        label.appendChild(span);
+                        for (var iterate = 0; iterate < keys.length; iterate++) {
+                                var span = document.createElement('span');
+                                span.innerText = this.defaultMessage[keys[iterate]];
+                                label.appendChild(span);
+                        }
+                        var a = document.createElement("a");
                         label.classList.add('js-upload-button');
                         label.setAttribute('for', newID);
                         input.parentNode.appendChild(label);
+                        a.setAttribute('href', 'javascript:void(0)');
+                        a.setAttribute('rel', 'nofollow noindex noreferrer');
+                        label.appendChild(a);
                         label.appendChild(input);
+                        this.setUploadStatus(label, "upload");
+                }
+        },
+        setUploadStatus: function (target, status, info) {
+                var spans = target.getElementsByTagName('span')
+                status = (status == "upload" ? 0 : (status == "uploading" ? 1 : status == "uploaded" ? 2 : null));
+                for (var i = 0; i < spans.length; i++) {
+                        spans[i].classList.remove('active');
+                        spans[i].removeAttribute("style");
+                        if (status == 1 && i == 1) {
+                                spans[i].style.width = ((info.current * 100) / info.total) + "%";
+                        }
+                        (i == status ? spans[i].classList.add('active') : '');
                 }
         },
         mount: function (input, config) {
@@ -53,14 +72,13 @@ var Upload = {
                                 if (config.total > 1) {
                                         input.setAttribute('multiple', true);
                                 }
-                                //input.setAttribute('data-total', config.total);
                         }
                 }
                 input.integrity = config.integrity;
         },
         middleware: function (input, config) {
                 var validation = this.validation;
-                var SEND = this.send;
+                var SEND = this.send, STATUS = this.setUploadStatus;
                 config.url = this.defaultURL;
                 config.slice = this.defaultSliceSize;
                 input.addEventListener('change', function (event) {
@@ -70,11 +88,11 @@ var Upload = {
                                 if (count <= config.total) {
                                         var valid = validation(this.files[i], config);
                                         if (valid.valid) {
+                                                this.parentNode.classList.add("js-uploading");
                                                 console.log(valid.message);
-                                                SEND(SEND, this.files[i], config);
+                                                return SEND(SEND, STATUS, input, this.files[i], config);
                                         } else {
                                                 console.log(valid.message);
-                                                //BoxMessage(valid.message); // needs validation script
                                                 event.preventDefault();
                                                 delete this.files;
                                                 return false;
@@ -85,7 +103,7 @@ var Upload = {
                         }
                 });
         },
-        send: function (SEND, file, config, result) {
+        send: function (SEND, STATUS, input, file, config, result) {
                 if (typeof result == "undefined") {
                         var uploading = {
                                 config: config,
@@ -97,10 +115,12 @@ var Upload = {
                         var uploading = result;
                         delete uploading.data;
                 }
+                STATUS(input.parentNode, "uploading", { current: uploading.currentRequest, total: uploading.totalRequests });
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", config.url, true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                xhr.onreadystatechange = function (event) { // Chama a função quando o estado mudar.
+                xhr.onreadystatechange = function () {
+                        console.log(this);
                         if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                                 var response = JSON.parse(this.response);
                                 if (response.status) {
@@ -110,16 +130,27 @@ var Upload = {
                                                 uploading.fileName = response.fileName;
                                         }
                                         if (uploading.currentRequest == uploading.totalRequests) {
-                                                console.log("File completely uploaded");
+                                                console.log("File uploaded. " + uploading.currentRequest + "/" + uploading.totalRequests);
+                                                input.parentNode.classList.remove("js-uploading");
+                                                STATUS(input.parentNode, "uploaded");
+                                                setTimeout(function () {
+                                                        STATUS(input.parentNode, "upload");
+                                                }, 3000);
                                                 return true;
                                         } else {
                                                 delete uploading.data
                                                 console.log("File still uploading... " + uploading.currentRequest + "/" + uploading.totalRequests);
-                                                SEND(SEND, file, config, uploading);
+                                                return SEND(SEND, STATUS, input, file, config, uploading);
                                         }
                                 } else {
                                         console.log("File weren't uploaded");
+                                        STATUS(input.parentNode, "upload");
+                                        return false;
                                 }
+                        } else {
+                                /*console.log("An error has ocurred. Please, try again later.");
+                                STATUS(input.parentNode, "upload");
+                                return false;*/
                         }
                 }
                 var reader = new FileReader();
@@ -154,7 +185,7 @@ var Upload = {
                         "size" => 266000,
                         "total" => 10,
                         "vars" => array(), // passa variaveis adicionais
-                        "integrity" => crypted
+                        "integrity" => crypted:
                 );
                  */
                 config = profile.config;

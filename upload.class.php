@@ -29,8 +29,6 @@ class Upload
         unset($config['folder']);
         self::$profiles[md5($name)] = array(
             "config" => $config
-            //"name" => md5($name),
-            //$config
         );
     }
 
