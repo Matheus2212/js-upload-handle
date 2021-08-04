@@ -40,8 +40,15 @@ var Upload = {
                         a.setAttribute('rel', 'nofollow noindex noreferrer');
                         label.appendChild(a);
                         label.appendChild(input);
+                        this.setCancelable(a, input);
                         this.setUploadStatus(label, "upload");
                 }
+        },
+        setCancelable: function (a, input) {
+                a.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        input.cancelUpload = true;
+                });
         },
         setUploadStatus: function (target, status, info) {
                 var spans = target.getElementsByTagName('span')
@@ -49,6 +56,9 @@ var Upload = {
                 for (var i = 0; i < spans.length; i++) {
                         spans[i].classList.remove('active');
                         spans[i].removeAttribute("style");
+                        if (status == 0 && i == 0) {
+                                target.classList.remove("js-uploading");
+                        }
                         if (status == 1 && i == 1) {
                                 spans[i].style.width = ((info.current * 100) / info.total) + "%";
                         }
@@ -77,8 +87,7 @@ var Upload = {
                 input.integrity = config.integrity;
         },
         middleware: function (input, config) {
-                var validation = this.validation;
-                var SEND = this.send, STATUS = this.setUploadStatus;
+                var UPLOAD = this;
                 config.url = this.defaultURL;
                 config.slice = this.defaultSliceSize;
                 input.addEventListener('change', function (event) {
@@ -86,24 +95,21 @@ var Upload = {
                         for (var i = 0; i < this.files.length; i++) {
                                 count++;
                                 if (count <= config.total) {
-                                        var valid = validation(this.files[i], config);
+                                        var valid = UPLOAD.validation(this.files[i], config);
                                         if (valid.valid) {
                                                 this.parentNode.classList.add("js-uploading");
                                                 console.log(valid.message);
-                                                return SEND(SEND, STATUS, input, this.files[i], config);
+                                                UPLOAD.send(UPLOAD, input, this.files[i], config);
                                         } else {
                                                 console.log(valid.message);
                                                 event.preventDefault();
                                                 delete this.files;
-                                                return false;
                                         }
-                                } else {
-                                        return false;
                                 }
                         }
                 });
         },
-        send: function (SEND, STATUS, input, file, config, result) {
+        send: function (UPLOAD, input, file, config, result) {
                 if (typeof result == "undefined") {
                         var uploading = {
                                 config: config,
@@ -115,16 +121,16 @@ var Upload = {
                         var uploading = result;
                         delete uploading.data;
                 }
-                STATUS(input.parentNode, "uploading", { current: uploading.currentRequest, total: uploading.totalRequests });
+                UPLOAD.setUploadStatus(input.parentNode, "uploading", { current: uploading.currentRequest, total: uploading.totalRequests });
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", config.url, true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                xhr.onreadystatechange = function () {
-                        console.log(this);
+                xhr.addEventListener("readystatechange", function () {
                         if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                                 var response = JSON.parse(this.response);
-                                if (response.status) {
+                                if (response.status && (typeof input.cancelUpload == "undefined" || input.cancelUpload == false)) {
                                         ++uploading.currentRequest;
+                                        console.log(uploading);
                                         if (response.fileNameSet) {
                                                 uploading.fileNameSet = true;
                                                 uploading.fileName = response.fileName;
@@ -132,27 +138,42 @@ var Upload = {
                                         if (uploading.currentRequest == uploading.totalRequests) {
                                                 console.log("File uploaded. " + uploading.currentRequest + "/" + uploading.totalRequests);
                                                 input.parentNode.classList.remove("js-uploading");
-                                                STATUS(input.parentNode, "uploaded");
+                                                UPLOAD.setUploadStatus(input.parentNode, "uploaded");
+                                                delete uploading.data;
                                                 setTimeout(function () {
-                                                        STATUS(input.parentNode, "upload");
+                                                        UPLOAD.setUploadStatus(input.parentNode, "upload");
                                                 }, 3000);
-                                                return true;
+                                                return uploading;
                                         } else {
                                                 delete uploading.data
                                                 console.log("File still uploading... " + uploading.currentRequest + "/" + uploading.totalRequests);
-                                                return SEND(SEND, STATUS, input, file, config, uploading);
+                                                return UPLOAD.send(UPLOAD, input, file, config, uploading);
                                         }
                                 } else {
-                                        console.log("File weren't uploaded");
-                                        STATUS(input.parentNode, "upload");
+                                        if (typeof input.cancelUpload !== "undefined" && input.cancelUpload === true) {
+                                                delete uploading.data;
+                                                if (response.fileNameSet) {
+                                                        uploading.fileNameSet = true;
+                                                        uploading.fileName = response.fileName;
+                                                }
+                                                var xhr = new XMLHttpRequest();
+                                                xhr.open("POST", config.url, true);
+                                                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                                                xhr.send("cancel=" + JSON.stringify(uploading));
+                                                delete input.cancelUpload;
+                                        }
+                                        console.log("File weren't uploaded.");
+                                        UPLOAD.setUploadStatus(input.parentNode, "upload");
                                         return false;
                                 }
-                        } else {
-                                /*console.log("An error has ocurred. Please, try again later.");
-                                STATUS(input.parentNode, "upload");
-                                return false;*/
+                        } else if (this.readyState === XMLHttpRequest.DONE && this.status === 404) {
+                                console.log("An error has ocurred. Please, try again later.");
+                                setTimeout(function () {
+                                        UPLOAD.setUploadStatus(input.parentNode, "upload");
+                                }, 1000);
+                                return false;
                         }
-                }
+                });
                 var reader = new FileReader();
                 reader.onload = function () {
                         uploading.data = this.result;
@@ -161,6 +182,9 @@ var Upload = {
                 }
                 var size = (config.slice * uploading.currentRequest);
                 reader.readAsDataURL((config.slice > file.size ? file : file.slice(size, size + config.slice)));
+        },
+        afterUpload: function () {
+
         },
         validation: function (file, config) {
                 var returns = {

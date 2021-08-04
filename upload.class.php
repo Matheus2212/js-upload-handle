@@ -134,6 +134,13 @@ class Upload
         }
     }
 
+    public static function delete($path)
+    {
+        if (file_exists($path) && !preg_match("/(\.)(php|js|css|html)/", $path)) {
+            unlink($path);
+        }
+    }
+
     public static function setNewName($source)
     {
         $aux = explode(".", $source);

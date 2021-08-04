@@ -10,7 +10,7 @@ Upload class for huge files. It was tested with a 35gb file.
   Set the Upload 'profile', for validation during upload proccess:
 
 ```php
-include('class/path');
+include('class/path/file.php');
 
 $profile = array(
         "types" => array("jpeg", "jpg", "png"), // which filetypes are accepted
