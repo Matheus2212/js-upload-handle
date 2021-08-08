@@ -121,16 +121,61 @@ class Upload
             mkdir($folder, 0775, true);
             chmod($folder, 0775);
         }
+        $id = md5($fileName);
+        $jsonData = array(
+            "name" => $fileName,
+            "date" => date("Y-m-d"),
+            "status" => "uploading"
+        );
+        if (file_exists($folder . DIRECTORY_SEPARATOR . "upload.log.json")) {
+            $log = self::recursive_utf8_decode(json_decode(file_get_contents($folder . DIRECTORY_SEPARATOR . "upload.log.json"), true));
+            $log[$id] = $jsonData;
+        } else {
+            $log = array();
+            $log[$id] = $jsonData;
+        }
+        file_put_contents($folder . DIRECTORY_SEPARATOR . "upload.log.json", json_encode(self::recursive_utf8_encode($log)));
+        self::removeTrash($folder);
         $file = @fopen($folder . DIRECTORY_SEPARATOR . $fileName, 'a');
         if ($file) {
             $data = explode(',', $data);
             fwrite($file, base64_decode(str_replace(" ", "+", $data[1])));
-            //fwrite($file, $data);
             fclose($file);
             return true;
         } else {
             // script doesn't have permission to create folders or files.
             return false;
+        }
+    }
+
+    private static function removeTrash($folder)
+    {
+        if (file_exists($folder . DIRECTORY_SEPARATOR . "upload.log.json")) {
+            $json = self::recursive_utf8_decode(json_decode(file_get_contents($folder . DIRECTORY_SEPARATOR . "upload.log.json"), true));
+            $date = date("Y-m-d");
+            foreach ($json as $id => $data) {
+                if ($data["date"] !== $date) {
+                    @unlink($folder . DIRECTORY_SEPARATOR . $data["name"]);
+                    unset($json[$id]);
+                }
+            }
+            file_put_contents($folder . DIRECTORY_SEPARATOR . "upload.log.json", json_encode(self::recursive_utf8_encode($json)));
+        }
+        return true;
+    }
+
+    public static function unsetLog($fileName, $folder)
+    {
+        if (file_exists($folder . DIRECTORY_SEPARATOR . "upload.log.json")) {
+            $json = self::recursive_utf8_decode(json_decode(file_get_contents($folder . DIRECTORY_SEPARATOR .  "upload.log.json"), true));
+            unset($json[md5($fileName)]);
+            if (empty($json)) {
+                @unlink($folder . DIRECTORY_SEPARATOR . "upload.log.json");
+                return true;
+            } else {
+                file_put_contents($folder . DIRECTORY_SEPARATOR . "upload.log.json", json_encode(self::recursive_utf8_encode($json)));
+                return true;
+            }
         }
     }
 

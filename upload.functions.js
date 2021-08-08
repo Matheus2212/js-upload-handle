@@ -5,7 +5,7 @@ var Upload = {
                 uploaded: "Enviado"
         },
         defaultURL: 'upload.middleware.php',
-        defaultSliceSize: (10 * 1024 * 1024), // 10mb
+        defaultSliceSize: (10 * 1024 * 512), // 5mb
         newID: function () {
                 var result = [];
                 var length = 10;

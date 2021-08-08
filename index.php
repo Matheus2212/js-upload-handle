@@ -17,6 +17,9 @@ $profile = array(
 Upload::addProfile('imagem', $profile);
 
 Upload::set('imagem', 'imagem');
+Upload::set('imagem2', 'imagem');
+Upload::set('imagem3', 'imagem');
+Upload::set('imagem4', 'imagem');
 
 ?>
 
@@ -34,6 +37,10 @@ Upload::set('imagem', 'imagem');
 
 <body>
         <input type="file" name="imagem" />
+        <input type="file" name="imagem2" />
+        <input type="file" name="imagem3" />
+        <input type="file" name="imagem4" />
+        <input type="file" name="imagem5" />
         <?php Upload::init() ?>
 </body>
 

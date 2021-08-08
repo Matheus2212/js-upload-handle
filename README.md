@@ -4,6 +4,13 @@ Upload class for huge files. It was tested with a 35gb file.
 
 ---
 
+## Execution line (126/130)
+
+- Append an input type=hidden where value = newFileName after upload complete (append result)
+- Add preview or upload line with an reference for the uploaded file (append preview)
+- Add remove file function, to remove the uploaded file from server (remove file)
+- Add callback function for Messages about the upload (alerts)
+
 ## How to use
 
 - Add profile: 
