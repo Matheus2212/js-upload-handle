@@ -41,7 +41,18 @@ if ($_POST) {
                         Upload::unsetLog($data['fileName'], $profile['folder']);
                         if (Upload::delete($path)) {
                                 $return["message"] = "Upload canceled.";
-                                $return["true"];
+                                $return["status"] = true;
+                        }
+                }
+        }
+        if (isset($_POST['delete'])) {
+                $data = @json_decode($_POST['delete'], true);
+                if ($data) {
+                        $profile = Upload::getProfile($data['config']['integrity']);
+                        $path = $profile["folder"] . DIRECTORY_SEPARATOR . $data["fileName"];
+                        if (Upload::delete($path)) {
+                                $return["message"] = "Upload deleted.";
+                                $return["status"] = true;
                         }
                 }
         }

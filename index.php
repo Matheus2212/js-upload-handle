@@ -7,11 +7,12 @@ header("Pragma: no-cache");
 include("upload.class.php");
 
 $profile = array(
+        "url" => "http://localhost/testes/js-php-upload-class/upload.middleware.php",
         "types" => array("jpeg", "jpg", "png", "mkv", "matroska", "mp3"),
         "folder" => "./uploads/",
         "size" => 25000000000,
         "total" => 5,
-        "vars" => array(), // send additional data to backend
+        "vars" => array(), // send additional data to frontend
 );
 
 Upload::addProfile('imagem', $profile);

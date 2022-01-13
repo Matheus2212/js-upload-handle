@@ -1,5 +1,5 @@
-.js-upload-button,
-.js-upload-button * {
+.js-upload-wrapper,
+.js-upload-wrapper * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -284,4 +284,86 @@
   opacity: 1;
   z-index: 1;
   transform: rotate(180deg);
+}
+.js-upload-line {
+  position: relative;
+  margin: 0 -5px;
+}
+.js-upload-line::after {
+  content: " ";
+  display: table;
+  clear: both;
+}
+.js-upload-line span {
+  float: left;
+  margin: 10px;
+  padding: 30px;
+  display: block;
+  position: relative;
+
+  -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  -o-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  -ms-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+
+  -webkit-transition: ease-in-out 0.3s;
+  -moz-transition: ease-in-out 0.3s;
+  -o-transition: ease-in-out 0.3s;
+  -ms-transition: ease-in-out 0.3s;
+  transition: ease-in-out 0.3s;
+
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -o-border-radius: 4px;
+  -ms-border-radius: 4px;
+  border-radius: 4px;
+}
+.js-upload-line span:hover {
+  -webkit-box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.2);
+  -o-box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.2);
+  -ms-box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.2);
+}
+.js-upload-line span::before {
+  content: attr(data-content);
+  display: block;
+  position: absolute;
+  font-size: 17px;
+  font-family: inherit;
+  color: #333333;
+  top: 50%;
+  left: 50%;
+  margin-left: -12.5px;
+  margin-top: -12.5px;
+}
+
+.js-upload-line .js-upload-icon a {
+  position: absolute;
+  color: #ffffff;
+  background-color: #ba0039;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  top: 2px;
+  right: 2px;
+  cursor: pointer;
+  font-family: inherit;
+
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  -o-border-radius: 100%;
+  -ms-border-radius: 100%;
+  border-radius: 100%;
+}
+.js-upload-line .js-upload-icon a::before {
+  content: "x";
+  position: absolute;
+  display: block;
+  font-family: inherit;
+  left: 50%;
+  top: 50%;
+  margin-top: -9px;
+  margin-left: -4px;
 }

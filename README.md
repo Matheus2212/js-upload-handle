@@ -10,6 +10,7 @@ Upload class for huge files. It was tested with a 35gb file.
 - Add preview or upload line with an reference for the uploaded file (append preview)
 - Add remove file function, to remove the uploaded file from server (remove file)
 - Add callback function for Messages about the upload (alerts)
+- Add function to prevent form submission if input file is inside form tag
 
 ## How to use
 

@@ -4,7 +4,7 @@ var Upload = {
                 uploading: "Enviando",
                 uploaded: "Enviado"
         },
-        defaultURL: 'upload.middleware.php',
+        defaultURL: null,
         defaultSliceSize: (10 * 1024 * 512), // 5mb
         newID: function () {
                 var result = [];
@@ -24,20 +24,23 @@ var Upload = {
                 for (var i = 0; i < inputs.length; i++) {
                         var newID = this.newID();
                         var input = inputs[i];
-                        input.setAttribute('id', newID);
                         var keys = Object.keys(this.defaultMessage);
                         var label = document.createElement('label');
+                        label.classList.add('js-upload-button');
+                        label.setAttribute('for', newID);
+                        input.setAttribute('id', newID);
                         for (var iterate = 0; iterate < keys.length; iterate++) {
                                 var span = document.createElement('span');
                                 span.innerText = this.defaultMessage[keys[iterate]];
                                 label.appendChild(span);
                         }
                         var a = document.createElement("a");
-                        label.classList.add('js-upload-button');
-                        label.setAttribute('for', newID);
-                        input.parentNode.appendChild(label);
                         a.setAttribute('href', 'javascript:void(0)');
                         a.setAttribute('rel', 'nofollow noindex noreferrer');
+                        var div = document.createElement('div');
+                        div.classList.add("js-upload-wrapper");
+                        div.appendChild(label);
+                        input.parentNode.appendChild(div);
                         label.appendChild(a);
                         label.appendChild(input);
                         this.setCancelable(a, input);
@@ -88,7 +91,9 @@ var Upload = {
         },
         middleware: function (input, config) {
                 var UPLOAD = this;
-                config.url = this.defaultURL;
+                if (typeof config.url == "undefined") {
+                        config.url = this.defaultURL;
+                }
                 config.slice = this.defaultSliceSize;
                 input.addEventListener('change', function (event) {
                         var count = 0;
@@ -130,7 +135,6 @@ var Upload = {
                                 var response = JSON.parse(this.response);
                                 if (response.status && (typeof input.cancelUpload == "undefined" || input.cancelUpload == false)) {
                                         ++uploading.currentRequest;
-                                        console.log(uploading);
                                         if (response.fileNameSet) {
                                                 uploading.fileNameSet = true;
                                                 uploading.fileName = response.fileName;
@@ -140,6 +144,7 @@ var Upload = {
                                                 input.parentNode.classList.remove("js-uploading");
                                                 UPLOAD.setUploadStatus(input.parentNode, "uploaded");
                                                 delete uploading.data;
+                                                UPLOAD.afterUpload(input, uploading);
                                                 setTimeout(function () {
                                                         UPLOAD.setUploadStatus(input.parentNode, "upload");
                                                 }, 3000);
@@ -177,14 +182,51 @@ var Upload = {
                 var reader = new FileReader();
                 reader.onload = function () {
                         uploading.data = this.result;
+                        console.log(this.result);
                         xhr.send("upload=" + JSON.stringify(uploading));
                         delete uploading.data;
                 }
                 var size = (config.slice * uploading.currentRequest);
                 reader.readAsDataURL((config.slice > file.size ? file : file.slice(size, size + config.slice)));
         },
-        afterUpload: function () {
+        afterUpload: function (input, config) {
+                var wrapper = input.parentNode.parentNode;
+                var newInput = document.createElement('input');
+                var type = config.fileName.split('.');
+                type = type[type.length - 1];
+                newInput.setAttribute('type', 'hidden');
+                newInput.value = config.fileName;
+                newInput.setAttribute('name', "js-upload-" + this.newID());
+                var check = wrapper.getElementsByClassName("js-upload-line");
+                if (check.length == 0) {
+                        var check = document.createElement("div");
+                        check.classList.add("js-upload-line");
+                        wrapper.appendChild(check);
+                } else {
+                        check = check[0];
+                }
+                var icon = document.createElement('span');
+                icon.classList.add("js-upload-icon");
+                icon.setAttribute("data-content", type);
+                icon.innerHTML = "<a></a>";
+                check.appendChild(icon);
+                icon.getElementsByTagName('a')[0].addEventListener('click', function (evt) {
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST", config.config.url, true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        xhr.addEventListener("readystatechange", function () {
+                                console.log(this.response);
+                                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
 
+                                } else {
+
+                                }
+                        });
+                        xhr.send("delete=" + JSON.stringify(config));
+                        this.parentNode.remove();
+                });
         },
         validation: function (file, config) {
                 var returns = {

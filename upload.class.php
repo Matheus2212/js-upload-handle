@@ -5,7 +5,7 @@ class Upload
 
     private static $JSObject = "Upload";
     private static $JSCall = "newUpload";
-    protected static $key = "00cb9d1409ea4bbe52d83b3adbb25452622d5b8f";
+    protected static $key = "$2y$10\$krizQb2DpgDm40Fy1VLxiODhWqAiZxJ4HGOCmBVxNjIHvHN\/jLIYG";
     protected static $rootDir = null;
     protected static $fields = array();
     private static $profiles = array();
@@ -13,6 +13,7 @@ class Upload
     public static function addProfile($name, $config)
     {
         /* $template = array(
+          "url" => "where the request will be sent",
           "types" => array("jpeg", "jpg", "png"),
           "folder" => "./uploads/",
           "maxSize" => 260000,
@@ -182,7 +183,13 @@ class Upload
     public static function delete($path)
     {
         if (file_exists($path) && !preg_match("/(\.)(php|js|css|html)/", $path)) {
-            unlink($path);
+            if (unlink($path)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
