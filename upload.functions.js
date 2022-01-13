@@ -143,7 +143,9 @@ var Upload = {
                                                 console.log("File uploaded. " + uploading.currentRequest + "/" + uploading.totalRequests);
                                                 input.parentNode.classList.remove("js-uploading");
                                                 UPLOAD.setUploadStatus(input.parentNode, "uploaded");
-                                                delete uploading.data;
+                                                if (uploading.totalRequests !== 1) {
+                                                        delete uploading.data;
+                                                }
                                                 UPLOAD.afterUpload(input, uploading);
                                                 setTimeout(function () {
                                                         UPLOAD.setUploadStatus(input.parentNode, "upload");
@@ -182,9 +184,8 @@ var Upload = {
                 var reader = new FileReader();
                 reader.onload = function () {
                         uploading.data = this.result;
-                        console.log(this.result);
                         xhr.send("upload=" + JSON.stringify(uploading));
-                        delete uploading.data;
+                        //                        delete uploading.data;
                 }
                 var size = (config.slice * uploading.currentRequest);
                 reader.readAsDataURL((config.slice > file.size ? file : file.slice(size, size + config.slice)));
@@ -207,7 +208,14 @@ var Upload = {
                 }
                 var icon = document.createElement('span');
                 icon.classList.add("js-upload-icon");
-                icon.setAttribute("data-content", type);
+                if (typeof config.data !== "undefined") {
+                        icon.style.backgroundColor = "#FFFFFF";
+                        icon.style.backgroundImage = "url('" + config.data + "')";
+                        icon.style.backgroundSize = "cover";
+                        icon.style.backgroundPosition = "center";
+                } else {
+                        icon.setAttribute("data-content", type);
+                }
                 icon.innerHTML = "<a></a>";
                 check.appendChild(icon);
                 icon.getElementsByTagName('a')[0].addEventListener('click', function (evt) {
@@ -217,15 +225,13 @@ var Upload = {
                         xhr.open("POST", config.config.url, true);
                         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                         xhr.addEventListener("readystatechange", function () {
-                                console.log(this.response);
-                                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-
-                                } else {
-
-                                }
                         });
                         xhr.send("delete=" + JSON.stringify(config));
-                        this.parentNode.remove();
+                        if (this.parentNode.parentNode.getElementsByTagName('a').length == 1) {
+                                this.parentNode.parentNode.remove();
+                        } else {
+                                this.parentNode.remove();
+                        }
                 });
         },
         validation: function (file, config) {
