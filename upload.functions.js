@@ -185,7 +185,7 @@ var Upload = {
                 reader.onload = function () {
                         uploading.data = this.result;
                         xhr.send("upload=" + JSON.stringify(uploading));
-                        //                        delete uploading.data;
+                        //delete uploading.data;
                 }
                 var size = (config.slice * uploading.currentRequest);
                 reader.readAsDataURL((config.slice > file.size ? file : file.slice(size, size + config.slice)));
@@ -197,7 +197,7 @@ var Upload = {
                 type = type[type.length - 1];
                 newInput.setAttribute('type', 'hidden');
                 newInput.value = config.fileName;
-                newInput.setAttribute('name', "js-upload-" + this.newID());
+                newInput.setAttribute('name', "js-upload[" + this.newID() + "]");
                 var check = wrapper.getElementsByClassName("js-upload-line");
                 if (check.length == 0) {
                         var check = document.createElement("div");
@@ -217,6 +217,7 @@ var Upload = {
                         icon.setAttribute("data-content", type);
                 }
                 icon.innerHTML = "<a></a>";
+                icon.appendChild(newInput);
                 check.appendChild(icon);
                 icon.getElementsByTagName('a')[0].addEventListener('click', function (evt) {
                         evt.preventDefault();

@@ -7,9 +7,9 @@ header("Pragma: no-cache");
 include("upload.class.php");
 
 $profile = array(
-        "url" => "http://localhost/testes/js-php-upload-class/upload.middleware.php",
-        "types" => array("jpeg", "jpg", "png", "bmp", "webp     "),
-        "folder" => "./uploads/",
+        "url" => "https://app.chili.pa/api/v1.0/upload",
+        "types" => array("jpeg", "jpg", "png", "bmp", "webp"),
+        "folder" => "./storage/profile",
         "size" => 5000000000,
         "total" => 5,
         "vars" => array(), // send additional data to frontend
