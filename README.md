@@ -4,14 +4,6 @@ Upload class for huge files. It was tested with a 35gb file.
 
 ---
 
-## Execution line (126/130)
-
-- Append an input type=hidden where value = newFileName after upload complete (append result)
-- Add preview or upload line with an reference for the uploaded file (append preview)
-- Add remove file function, to remove the uploaded file from server (remove file)
-- Add callback function for Messages about the upload (alerts)
-- Add function to prevent form submission if input file is inside form tag
-
 ## How to use
 
 - Add profile: 
@@ -22,7 +14,7 @@ include('class/path/file.php');
 
 $profile = array(
         "types" => array("jpeg", "jpg", "png"), // which filetypes are accepted
-        "folder" => "./uploads/", // which folder your files go, for this specific profile
+        "folder" => "./uploads/", // which folder your files go, for this specific profile, on your local server
         "size" => 266000, // max size of file upload
         "total" => 10, // total files that can be upload on this input
         "vars" => array(), // additional vars that will be passed to frontend and backend
