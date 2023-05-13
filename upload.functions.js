@@ -13,6 +13,7 @@ var Upload = {
   defaultURL: null,
   defaultSliceSize: 10 * 1024 * 256, // 2.5mb
   validationCallback: null,
+  onReadCallback: null,
   newID: function () {
     var result = [];
     var length = 10;
@@ -69,10 +70,10 @@ var Upload = {
       status == "upload"
         ? 0
         : status == "uploading"
-        ? 1
-        : status == "uploaded"
-        ? 2
-        : null;
+          ? 1
+          : status == "uploaded"
+            ? 2
+            : null;
     for (var i = 0; i < spans.length; i++) {
       spans[i].classList.remove("active");
       spans[i].removeAttribute("style");
@@ -173,9 +174,9 @@ var Upload = {
           if (uploading.currentRequest == uploading.totalRequests) {
             console.log(
               "File uploaded. " +
-                uploading.currentRequest +
-                "/" +
-                uploading.totalRequests
+              uploading.currentRequest +
+              "/" +
+              uploading.totalRequests
             );
             input.parentNode.classList.remove("js-uploading");
             UPLOAD.setUploadStatus(input.parentNode, "uploaded");
@@ -191,9 +192,9 @@ var Upload = {
             delete uploading.data;
             console.log(
               "File still uploading... " +
-                uploading.currentRequest +
-                "/" +
-                uploading.totalRequests
+              uploading.currentRequest +
+              "/" +
+              uploading.totalRequests
             );
             return UPLOAD.send(UPLOAD, input, file, config, uploading);
           }
@@ -234,7 +235,23 @@ var Upload = {
     var reader = new FileReader();
     reader.onload = function () {
       uploading.data = this.result;
-      xhr.send("upload=" + JSON.stringify(uploading));
+      if (
+        UPLOAD.onReadCallback !== null &&
+        typeof UPLOAD.onReadCallback == "function"
+      ) {
+        UPLOAD.onReadCallback(uploading.data);
+      }
+      if (typeof config.url !== "undefined" && config.url != null) {
+        xhr.send("upload=" + JSON.stringify(uploading));
+      } else {
+        console.log(
+          "It seems this is a LOCAL UPLOAD. File not sent to server."
+        );
+        UPLOAD.setUploadStatus(input.parentNode, "uploaded");
+        setTimeout(function () {
+          UPLOAD.setUploadStatus(input.parentNode, "upload");
+        }, 5000);
+      }
       //delete uploading.data;
     };
     var size = config.slice * uploading.currentRequest;
@@ -277,7 +294,7 @@ var Upload = {
       var xhr = new XMLHttpRequest();
       xhr.open("POST", config.config.url, true);
       xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.addEventListener("readystatechange", function () {});
+      xhr.addEventListener("readystatechange", function () { });
       xhr.send("delete=" + JSON.stringify(config));
       if (this.parentNode.parentNode.getElementsByTagName("a").length == 1) {
         this.parentNode.parentNode.remove();
@@ -305,6 +322,11 @@ var Upload = {
   setValidationCallback: function (callback) {
     if (typeof callback == "function") {
       this.validationCallback = callback;
+    }
+  },
+  setOnReadCallback: function (callback) {
+    if (typeof callback == "function") {
+      this.onReadCallback = callback;
     }
   },
   bind: function (inputs, profile) {

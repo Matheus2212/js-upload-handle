@@ -2,6 +2,8 @@
 
 Upload class for huge files. It was tested with a 35gb file.
 
+NOTE: This class and README are going being redone. Please, wait for more detailed information.
+
 ---
 
 ## How to use
@@ -55,6 +57,26 @@ Upload::init() ;
 ```
 
 ---
+
+- For FrontEnd Only:
+  Maybe you just want to work on frontend or use indexedDB in your application, and you need to handle uploads. Well, you can do it with the following (assuming you already have any profile of any sort): 
+  ```javascript
+  const build = () => {
+    setTimeout(() => {
+        Upload.setOnReadCallback((result) => {
+          let contents = atob(result.split(",")[1]);
+          //Do your stuff
+        });
+        let input = document.querySelector("[name=s_a]");
+        Upload.build([input]);
+        Upload.mount(input, config);
+        Upload.middleware(input, config);
+    }, 1000);
+  };
+  ```
+
+The script will do whatever you tell it to while READING the file. This method is still to be improved.
+
 
 The class will call the script functions and prepare the input and upload functions to you!
 
