@@ -95,6 +95,10 @@ var Upload = {
       if (keys[i] == "types") {
         var f = new Array();
         for (var it = 0; it < config.types.length; it++) {
+          if (!config.types[it].includes('/') || !config.types[it].includes('*')) {
+            f.push(config.types[it]);
+            continue;
+          }
           f.push("." + config.types[it]);
         }
         input.setAttribute("accept", f.join(","));

@@ -39,7 +39,7 @@ Upload::set('imagem4', 'imagem');
                         types: ["*"],
                         total: 1,
                         integrity: "none",
-                        size: 10000,
+                        size: 10000000,
                 };
 
                 var build = () => {
