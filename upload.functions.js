@@ -312,6 +312,9 @@ var Upload = {
       returns.valid = false;
       returns.message = "File size is bigger than allowed";
     }
+    if (config.types.length === 1 && config.types[0] === "*") {
+      return returns;
+    }
     var regex = new RegExp(config.types.join("|").toLowerCase());
     if (!regex.test(file.type)) {
       returns.valid = false;

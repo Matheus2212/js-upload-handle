@@ -34,15 +34,32 @@ Upload::set('imagem4', 'imagem');
         <title>Upload</title>
         <script type="text/javascript" src='upload.functions.js'></script>
         <link rel="stylesheet" href="upload.style.css" />
+        <script>
+                var config = {
+                        types: ["*"],
+                        total: 1,
+                        integrity: "none",
+                        size: 10000,
+                };
+
+                var build = () => {
+                        setTimeout(() => {
+                                window['Upload'].setOnReadCallback((result) => {
+                                        let data = atob(result.split(",")[1]);
+                                        console.log(data);
+                                });
+                                let input = document.querySelector("[name=file]");
+                                window['Upload'].build([input]);
+                                window['Upload'].mount(input, config);
+                                window['Upload'].middleware(input, config);
+                        }, 500);
+                };
+                build();
+        </script>
 </head>
 
 <body>
-        <input type="file" name="imagem" />
-        <input type="file" name="imagem2" />
-        <input type="file" name="imagem3" />
-        <input type="file" name="imagem4" />
-        <input type="file" name="imagem5" />
-        <?php Upload::init() ?>
+        <input type="file" name="file" />
 </body>
 
 </html>
