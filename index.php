@@ -4,7 +4,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
-include("upload.class.php");
+include("UploadClass.php");
 
 $profile = array(
         "url" => "{{UPLOAD_URL}}",

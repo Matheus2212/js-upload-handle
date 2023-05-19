@@ -100,20 +100,22 @@ class Upload
             echo "<script type='text/javascript'>";
             echo (self::$JSMode == 1 ? "var" : "const") . " uploadProfiles = " . json_encode($profile == 'all' ? self::recursive_utf8_encode(self::$profiles) : self::recursive_utf8_encode(self::$profiles[md5($profile)])) . ";";
             echo "</script>";
-        } else {
-            return json_encode($profile == "all" ? self::recursive_utf8_encode(self::$profiles) : self::recursive_utf8_encode(self::$profiles[md5($profile)]));
+            return true;
         }
+        echo json_encode($profile == "all" ? self::recursive_utf8_encode(self::$profiles) : self::recursive_utf8_encode(self::$profiles[md5($profile)]));
+        return true;
     }
 
     public static function setTo($input, $profile, $tags = true)
     {
         if ($tags) {
             echo "<script type='text/javascript'>";
+            echo self::$JSObject . "." . self::$JSCall . "('" . $input . "','" . md5($profile) . "');";
+            echo "</script>";
+            return true;
         }
         echo self::$JSObject . "." . self::$JSCall . "('" . $input . "','" . md5($profile) . "');";
-        if ($tags) {
-            echo "</script>";
-        }
+        return true;
     }
 
     public static function saveFile($fileName, $data, $folder)
@@ -206,7 +208,7 @@ class Upload
     {
         self::setProfiles($tags);
         foreach (self::$fields as $key => $field) {
-            self::setTo($field['input'], $field['profile']);
+            self::setTo($field['input'], $field['profile'], $tags);
         }
     }
 }

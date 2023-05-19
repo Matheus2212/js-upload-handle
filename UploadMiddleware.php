@@ -1,7 +1,9 @@
 <?php
 
 if ($_POST) {
-        include('upload.class.php');
+        if (!class_exists("Upload")) {
+                include('UploadClass.php');
+        }
         $return = array(
                 'status' => false,
                 'message' => '',
@@ -55,6 +57,10 @@ if ($_POST) {
                                 $return["status"] = true;
                         }
                 }
+        }
+        if (isset($uploadReturn) && $uploadReturn) {
+                $return['profile'] = $profile;
+                return json_encode(Upload::recursive_utf8_encode($return));
         }
         echo json_encode(Upload::recursive_utf8_encode($return));
 }
