@@ -8,17 +8,19 @@
         <title>Upload</title>
 
         <!-- JS upload items -->
-        <script type="text/javascript" src='upload.functions.js'></script>
-        <link rel="stylesheet" href="upload.style.css" />
+        <script type="text/javascript" src='functions.js'></script>
+        <link rel="stylesheet" href="style.css" />
         <!-- JS upload items -->
-        
+
         <script>
                 // get backend configuration with fetch or XHR, then runs code below
-                var config = {
-                        types: ["*"],
-                        total: 1,
-                        integrity: "none",
-                        size: 10000000,
+                var x = {
+                        config: {
+                                types: ["*"],
+                                total: 1,
+                                integrity: "none",
+                                size: 10000000,
+                        }
                 };
 
                 var build = () => {
@@ -29,16 +31,44 @@
                                 });
                                 let input = document.querySelector("[name=file]");
                                 window['Upload'].build([input]);
-                                window['Upload'].mount(input, config);
-                                window['Upload'].middleware(input, config);
+                                window['Upload'].mount(input, x);
+                                window['Upload'].middleware(input, x);
                         }, 500);
                 };
                 build();
         </script>
+
+        <script>
+                Upload.setDefaultURL("http://127.0.0.1:3000"); // This URL should get ALL upload profiles
+                let newProfiles = fetch(Upload.getDefaultURL()).then(result => result.json()).then(result => {
+                        //In this case, the "key" on result is the profile name, so let's continue. Each profile contains a "inputNames" array
+                        let keys = Object.keys(result);
+                        keys.forEach(profile => {
+                                result[profile].inputNames.forEach(name => {
+                                        let input = document.querySelector("input[name='" + name + "']");
+                                        if (input !== null) {
+                                                window['Upload'].build([input]);
+                                                window['Upload'].mount(input, result[profile]);
+                                                window['Upload'].middleware(input, result[profile]);
+                                        }
+                                });
+                        });
+                }).catch(e => console.log(e))
+        </script>
 </head>
 
 <body>
-        <input type="file" name="file" />
+        <div>
+                <p>Below was created on frontend</p>
+                <input type="file" name="file" />
+        </div>
+
+        <br>
+        <br>
+        <div>
+                <p>Below came from backend</p>
+                <input type="file" name="backend" />
+        </div>
 </body>
 
 </html>

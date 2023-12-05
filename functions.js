@@ -58,6 +58,12 @@ var Upload = {
       this.setUploadStatus(label, "upload");
     }
   },
+  setDefaultURL: function (url) {
+    this.defaultURL = url;
+  },
+  getDefaultURL: function (url) {
+    return this.defaultURL;
+  },
   setCancelable: function (a, input) {
     a.addEventListener("click", function (event) {
       event.preventDefault();
@@ -66,14 +72,7 @@ var Upload = {
   },
   setUploadStatus: function (target, status, info) {
     var spans = target.getElementsByTagName("span");
-    status =
-      status == "upload"
-        ? 0
-        : status == "uploading"
-          ? 1
-          : status == "uploaded"
-            ? 2
-            : null;
+    status = (status == "upload" ? 0 : status == "uploading" ? 1 : status == "uploaded" ? 2 : null);
     for (var i = 0; i < spans.length; i++) {
       spans[i].classList.remove("active");
       spans[i].removeAttribute("style");
@@ -81,52 +80,53 @@ var Upload = {
         target.classList.remove("js-uploading");
       }
       if (status == 1 && i == 1) {
-        spans[i].style.width = (info.current * 100) / info.total + "%";
+        spans[i].style.width = (Math.ceil(info.current * 100) / info.total) + "%";
       }
       i == status ? spans[i].classList.add("active") : "";
     }
   },
-  mount: function (input, config) {
-    var keys = Object.keys(config);
+  mount: function (input, profile) {
+    var keys = Object.keys(profile.config);
     for (var i = 0; i < keys.length; i++) {
       if (keys[i] == "vars") {
-        input.vars = config.vars;
+        input.vars = profile.config.vars;
       }
       if (keys[i] == "types") {
         var f = new Array();
-        for (var it = 0; it < config.types.length; it++) {
-          if (!config.types[it].includes('/') || !config.types[it].includes('*')) {
-            f.push(config.types[it]);
+        for (var it = 0; it < profile.config.types.length; it++) {
+          if (!profile.config.types[it].includes('/') || !profile.config.types[it].includes('*')) {
+            f.push(profile.config.types[it]);
             continue;
           }
-          f.push("." + config.types[it]);
+          f.push("." + profile.config.types[it]);
         }
         input.setAttribute("accept", f.join(","));
       }
       if (keys[i] == "total") {
-        if (config.total > 1) {
+        if (profile.config.total > 1) {
           input.setAttribute("multiple", true);
         }
       }
     }
-    input.integrity = config.integrity;
   },
-  middleware: function (input, config) {
+  middleware: function (input, profile) {
     var UPLOAD = this;
-    if (typeof config.url == "undefined") {
-      config.url = this.defaultURL;
+    if (typeof profile.config.url == "undefined") {
+      profile.config.url = this.defaultURL;
     }
-    config.slice = this.defaultSliceSize;
+    if (typeof profile.config.slice === "undefined") {
+      profile.config.slice = this.defaultSliceSize;
+    }
     input.addEventListener("change", function (event) {
       var count = 0;
       for (var i = 0; i < this.files.length; i++) {
         count++;
-        if (count <= config.total) {
-          var valid = UPLOAD.validation(this.files[i], config);
+        if (count <= profile.config.total) {
+          var valid = UPLOAD.validation(this.files[i], profile);
           if (valid.valid) {
             this.parentNode.classList.add("js-uploading");
             console.log(valid.message);
-            UPLOAD.send(UPLOAD, input, this.files[i], config);
+            UPLOAD.send(UPLOAD, input, this.files[i], profile);
           } else {
             console.log(valid.message);
             if (
@@ -142,12 +142,11 @@ var Upload = {
       }
     });
   },
-  send: function (UPLOAD, input, file, config, result) {
+  send: function (UPLOAD, input, file, profile, result) {
     if (typeof result == "undefined") {
       var uploading = {
-        config: config,
-        totalRequests:
-          config.slice > file.size ? 1 : Math.ceil(file.size / config.slice),
+        profile: profile,
+        totalRequests: profile.config.slice > file.size ? 1 : Math.ceil(file.size / profile.config.slice),
         currentRequest: 0,
         fileName: file.name,
       };
@@ -160,7 +159,7 @@ var Upload = {
       total: uploading.totalRequests,
     });
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", config.url, true);
+    xhr.open("POST", profile.config.url + "?upload", true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.addEventListener("readystatechange", function () {
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
@@ -200,7 +199,7 @@ var Upload = {
               "/" +
               uploading.totalRequests
             );
-            return UPLOAD.send(UPLOAD, input, file, config, uploading);
+            return UPLOAD.send(UPLOAD, input, file, profile, uploading);
           }
         } else {
           if (
@@ -213,7 +212,7 @@ var Upload = {
               uploading.fileName = response.fileName;
             }
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", config.url, true);
+            xhr.open("POST", profile.config.url + "?upload", true);
             xhr.setRequestHeader(
               "Content-Type",
               "application/x-www-form-urlencoded"
@@ -245,7 +244,7 @@ var Upload = {
       ) {
         UPLOAD.onReadCallback(uploading.data);
       }
-      if (typeof config.url !== "undefined" && config.url != null) {
+      if (typeof profile.config.url !== "undefined" && profile.config.url != null) {
         xhr.send("upload=" + JSON.stringify(uploading));
       } else {
         console.log(
@@ -258,18 +257,16 @@ var Upload = {
       }
       //delete uploading.data;
     };
-    var size = config.slice * uploading.currentRequest;
-    reader.readAsDataURL(
-      config.slice > file.size ? file : file.slice(size, size + config.slice)
-    );
+    var size = profile.config.slice * uploading.currentRequest;
+    reader.readAsDataURL(profile.config.slice > file.size ? file : file.slice(size, size + profile.config.slice));
   },
-  afterUpload: function (input, config) {
+  afterUpload: function (input, profile) {
     var wrapper = input.parentNode.parentNode;
     var newInput = document.createElement("input");
-    var type = config.fileName.split(".");
+    var type = profile.fileName.split(".");
     type = type[type.length - 1];
     newInput.setAttribute("type", "hidden");
-    newInput.value = config.fileName;
+    newInput.value = profile.fileName;
     newInput.setAttribute("name", "js-upload[" + this.newID() + "]");
     var check = wrapper.getElementsByClassName("js-upload-line");
     if (check.length == 0) {
@@ -281,9 +278,9 @@ var Upload = {
     }
     var icon = document.createElement("span");
     icon.classList.add("js-upload-icon");
-    if (typeof config.data !== "undefined") {
+    if (typeof profile.data !== "undefined") {
       icon.style.backgroundColor = "#FFFFFF";
-      icon.style.backgroundImage = "url('" + config.data + "')";
+      icon.style.backgroundImage = "url('" + profile.data + "')";
       icon.style.backgroundSize = "cover";
       icon.style.backgroundPosition = "center";
     } else {
@@ -296,10 +293,10 @@ var Upload = {
       evt.preventDefault();
       evt.stopPropagation();
       var xhr = new XMLHttpRequest();
-      xhr.open("POST", config.config.url, true);
+      xhr.open("POST", profile.profile.config.url + "?upload", true);
       xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
       xhr.addEventListener("readystatechange", function () { });
-      xhr.send("delete=" + JSON.stringify(config));
+      xhr.send("delete=" + JSON.stringify(profile));
       if (this.parentNode.parentNode.getElementsByTagName("a").length == 1) {
         this.parentNode.parentNode.remove();
       } else {
@@ -307,19 +304,19 @@ var Upload = {
       }
     });
   },
-  validation: function (file, config) {
+  validation: function (file, profile) {
     var returns = {
       valid: true,
       message: "",
     };
-    if (file.size > config.size) {
+    if (file.size > profile.config.size) {
       returns.valid = false;
       returns.message = "File size is bigger than allowed";
     }
-    if (config.types.length === 1 && config.types[0] === "*") {
+    if (profile.config.types.length === 1 && profile.config.types[0] === "*") {
       return returns;
     }
-    var regex = new RegExp(config.types.join("|").toLowerCase());
+    var regex = new RegExp(profile.config.types.join("|").toLowerCase());
     if (!regex.test(file.type)) {
       returns.valid = false;
       returns.message = "File type is not valid";
@@ -338,7 +335,7 @@ var Upload = {
   },
   bind: function (inputs, profile) {
     /*{
-      "{{md5-ciphered-upload-profile}}": {
+      "{{upload_profile_name}}": {
           "config": {
               "url": "{{URL fetched from backend}}",
               "types": [
@@ -347,17 +344,16 @@ var Upload = {
               "size": "{{max file size fetched from backend}}",
               "total": "{{total number of uploads in same input tag fetched from backend}}",
               "vars": [], //this can be added as 'extra' from backend
-              "integrity": "{{this is very important - this variable is the whole CIPHERED profile, which will be used to validated the data being sent to backend}}"
-          }
+          },
+          "inputNames":["name"],
       }
   }*/
-    config = profile.config;
-    if (!config.hasOwnProperty("total")) {
-      config.total = 1;
+    if (!profile.config.hasOwnProperty("total")) {
+      profile.config.total = 1;
     }
     for (var i = 0; i < inputs.length; i++) {
-      this.mount(inputs[i], config);
-      this.middleware(inputs[i], config);
+      this.mount(inputs[i], profile);
+      this.middleware(inputs[i], profile);
     }
   },
   newUpload: function (inputName, uploadProfile) {
