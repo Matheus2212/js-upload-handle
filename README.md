@@ -45,6 +45,9 @@ And add the input tag on you page:
           let contents = atob(result.split(",")[1]);
           //Do your stuff
         });
+        Upload.setOnUploadCallback((result,inputEl) => {
+          //Do your stuff
+        });
         let input = document.querySelector("[name=image]");
         Upload.build([input]);
         Upload.mount(input, x);

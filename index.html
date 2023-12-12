@@ -37,9 +37,23 @@
                 };
                 build();
         </script>
+</head>
+
+<body>
+        <div>
+                <p>Below was created on frontend</p>
+                <input type="file" name="file" />
+        </div>
+
+        <br>
+        <br>
+        <div>
+                <p>Below came from backend</p>
+                <input type="file" name="backend" />
+        </div>
 
         <script>
-                Upload.setDefaultURL("http://127.0.0.1:3000"); // This URL should get ALL upload profiles
+                Upload.setDefaultURL("http://127.0.0.1:8000/upload/"); // This URL should get ALL upload profiles
                 let newProfiles = fetch(Upload.getDefaultURL()).then(result => result.json()).then(result => {
                         //In this case, the "key" on result is the profile name, so let's continue. Each profile contains a "inputNames" array
                         let keys = Object.keys(result);
@@ -55,20 +69,6 @@
                         });
                 }).catch(e => console.log(e))
         </script>
-</head>
-
-<body>
-        <div>
-                <p>Below was created on frontend</p>
-                <input type="file" name="file" />
-        </div>
-
-        <br>
-        <br>
-        <div>
-                <p>Below came from backend</p>
-                <input type="file" name="backend" />
-        </div>
 </body>
 
 </html>
