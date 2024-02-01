@@ -26,6 +26,17 @@ var Upload = {
     }
     return result.join("");
   },
+  converter: function (bytes, decimals) {
+    if (decimals === undefined) {
+      decimals = 2
+    }
+    if (!+bytes) return '0 Bytes'
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+  },
   build: function (inputs) {
     if (inputs.length == 0) {
       console.log("Input tags not found!");
@@ -286,7 +297,7 @@ var Upload = {
     };
     if (file.size > profile.config.size) {
       returns.valid = false;
-      returns.message = "File size is bigger than allowed";
+      returns.message = "File size is bigger than allowed. " + (typeof profile.config.size !== "undefined" ? "Max size allowed: " + this.converter(profile.config.size) : "");
     }
     if (profile.config.types.length === 1 && profile.config.types[0] === "*") {
       return returns;
@@ -294,7 +305,7 @@ var Upload = {
     var regex = new RegExp(profile.config.types.join("|").toLowerCase());
     if (!regex.test(file.type)) {
       returns.valid = false;
-      returns.message = "File type is not valid";
+      returns.message = "File type is not valid. " + (typeof profile.config.types !== "undefined" ? "Types allowed: " + profile.config.types.join(", ") : "");
     }
     return returns;
   },
